@@ -1,3 +1,5 @@
+clear;
+
 function [linfe, ldiago] = factorise(diago, ss_diago)
     n = length(diago);
     for j=1:n
@@ -8,7 +10,7 @@ function [linfe, ldiago] = factorise(diago, ss_diago)
     end
     ldiago(1) = sqrt(diago(1));
     for i=2:n
-        ldiago(i) = sqrt(diago(i) - linfe(i-1)^2); // Pb linfe ou ss_diag ?
+        ldiago(i) = sqrt(diago(i) - linfe(i-1)^2);
         linfe(i-1) = ss_diago(i-1)/ldiago(i-1);
     end
 endfunction
@@ -37,9 +39,11 @@ function X = remonte(linfe, ldiago, Z)
     end
 endfunction
 
+
 function y = C(x,l)
     y = exp(-x/l)
 endfunction
+
 
 function B = b_create(n)
     for i=1:n
@@ -47,6 +51,7 @@ function B = b_create(n)
     end
     B(1) = C(0.5);
 endfunction
+
 
 function A = A_create(n,l)
     A = zeros(n,n);
@@ -66,41 +71,55 @@ function A = A_create(n,l)
     end
 endfunction
 
+
 function y = sol_exacte(x, l)
-    y = 1 - x/(l^2);
+    y = exp(1)*(exp(1) - exp(x/l))/(exp(2)- 1);
 endfunction
 
-n = 10;
-l = 10;
+
+function diago = diagonale(A,n)
+    for i=1:n
+        diago($+1) = A(i,i);
+    end
+endfunction
+
+
+function ss_diago = ss_diagonale(A,n)
+    for i=1:n-1
+        ss_diago($+1) = A(i+1,i);
+    end
+endfunction
+
+
+n = 20;
+l = 100;
 A = A_create(n,l);
 b = b_create(n);
-disp("matrice A: ");
-disp(A);
-disp("vecteur b: ");
-disp(b);
-disp("on veut résoudre Au=b");
-diago($+1) = A(1,1);
-for i=2:n
-    diago($+1) = A(i,i);
-    ss_diago($+1) = A(i, i-1);
-end
+//disp("matrice A: ");
+//disp(A);
+//disp("vecteur b: ");
+//disp(b);
+//disp("on veut résoudre Au=b");
+diago = diagonale(A,n);
+ss_diago = ss_diagonale(A,n);
 [linfe, ldiago] = factorise(diago, ss_diago);
 Z = descente(linfe, ldiago, b);
 X = remonte(linfe, ldiago, Z);
-disp("résultat calculé: ");
-disp(X);
-pas = 2*l/(n+1);
+//disp("résultat calculé: ");
+//disp(X);
+pas = 2*l/n;
+X_coord = [-l:pas:l];
 for i=1:n
-    X_coord($+1) = -l + i*pas;
-    Y_exact($+1) = sol_exacte(-l + i*pas);
+    Y_exact($+1) = sol_exacte(X_coord(i));
 end
 
-
-
-
-
-
-
+disp("coord:");
+disp(X_coord);
+clf; //Efface les courbes déjà présentes
+plot2d(sol_exacte(X_coord),style=2);
+plot2d(X,style=1);
+plot2d(sin(X_coord),style=3);
+legend(["Solution exacte";"Solution numérique avec n="+string(n);"ln"]);
 
 
 

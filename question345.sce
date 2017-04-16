@@ -1,39 +1,35 @@
+clear;
+
+// Factorisation de Cholesky: obtention de L telle que A = L*transp(L)
 function [linfe, ldiago] = factorise(diago, ss_diago)
     n = length(diago);
-    for j=1:n
-        ldiago($+1) = 0;
+    ldiago($+1) = sqrt(diago(1));
+    linfe($+1) = ss_diago(1) / ldiago(1);
+    for i=2:n-1
+        ldiago($+1) = sqrt(diago(i) - linfe(i-1)*linfe(i-1));
+        linfe($+1) = ss_diago(i) / ldiago(i);
     end
-    for k=1:n-1
-        linfe($+1) = 0;
-    end
-    ldiago(1) = sqrt(diago(1));
-    for i=2:n
-        ldiago(i) = sqrt(diago(i) - ss_diago(i-1)^2);
-        linfe(i-1) = ss_diago(i-1)/ldiago(i-1);
-    end
+    ldiago($+1) = sqrt(diago(n) - linfe(n-1)*linfe(n-1));
 endfunction
 
-
+// Descente: resolution de LZ = B
 function Z = descente(linfe, ldiago, Y)
     n = length(ldiago);
-    for j=1:n
-        Z($+1) = 0;
-    end
-    Z(1) = Y(1)/ldiago(1);
+    Z($+1) = Y(1)/ldiago(1);
     for i=2:n
-        Z(i) = (Y(i) - linfe(i-1) * Z(i-1)) / ldiago(i);
+        Z($+1) = (Y(i) - linfe(i-1) * Z(i-1))/ldiago(i);
     end
 endfunction
 
-
+// Remonte: resolution de transp(L)U = Z    (U=X=ce que l'on cherche)
 function X = remonte(linfe, ldiago, Z)
     n = length(ldiago);
-    for j = 1:n
+    for j=1:n
         X($+1) = 0;
     end
-    X(n) = Z(n)/ldiago(n);
+    X(n) = Z(n)/ldiago(n)
     for i=n-1:-1:1
-        X(i) = (Z(i) - linfe(i) * X(i+1)) / ldiago(i);
+        X(i) = (Z(i) - linfe(i) * X(i+1))/ldiago(i)
     end
 endfunction
 
@@ -52,5 +48,5 @@ X = remonte(linfe, ldiago, Z);
 disp("résultat calculé: ");
 disp(X);
 res = [65;62;55;43;25];
-disp("résultat attendu (merci wolfram alpha): ");
+disp("résultat attendu: ");
 disp(res);
